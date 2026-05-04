@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafios — App Inventor</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --login:   #4A148C;
+    --login-l: #F3E5F5;
+    --login-m: #CE93D8;
+    --mario:   #C94B00;
+    --mario-l: #FFF3E0;
+    --mario-m: #FFCC80;
+    --music:   #1B5E20;
+    --music-l: #E8F5E9;
+    --music-m: #A5D6A7;
+    --clima:   #1565C0;
+    --clima-l: #E3F2FD;
+  --telas: #2D7A4F;
+  --telas-l: #E6F4ED;
+    --clima-m: #90CAF9;
+    --bg:      #F7F6F3;
+    --surface: #FFFFFF;
+    --text:    #111;
+    --muted:   #6B7280;
+    --border:  #E5E7EB;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* HEADER */
+  .header {
+    background:#111; padding:18px 28px;
+    display:flex; align-items:center; gap:14px;
+    position:sticky; top:0; z-index:100;
+    border-bottom:2px solid #222;
+  }
+  .header-pill {
+    font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase;
+    background:#222; color:#999; padding:4px 12px; border-radius:99px;
+  }
+  .header-title { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:#fff; flex:1; }
+  .header-hint  { font-size:12px; color:#666; }
+
+  /* TABS */
+  .tabs { background:#111; padding:0 28px; display:flex; gap:2px; border-bottom:1px solid #222; }
+  .tab {
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+    padding:14px 18px; border:none; background:transparent; color:#555;
+    cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-1px;
+    transition:color .15s, border-color .15s; display:flex; align-items:center; gap:7px;
+  }
+  .tab:hover { color:#ccc; }
+  .tab.on { color:#fff; }
+  .tab.on.tl { border-color:var(--login-m); }
+  .tab.on.tm { border-color:var(--mario-m); }
+  .tab.on.ts { border-color:var(--music-m); }
+  .tab.on.tc { border-color:var(--clima-m); }
+
+  /* PAGE */
+  .page { display:none; padding:36px 28px; max-width:960px; margin:0 auto; }
+  .page.on { display:block; animation:up .22s ease; }
+  @keyframes up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* CHALLENGE BANNER */
+  .banner {
+    border-radius:16px; padding:28px 32px;
+    margin-bottom:32px; display:flex; align-items:center; gap:20px;
+  }
+  .banner-emoji { font-size:48px; flex-shrink:0; }
+  .banner h1 { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; color:#fff; margin-bottom:6px; }
+  .banner p  { font-size:13px; color:rgba(255,255,255,.7); line-height:1.65; }
+  .banner-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .banner-tag  {
+    font-size:11px; font-weight:600; letter-spacing:.04em;
+    padding:3px 10px; border-radius:99px;
+    background:rgba(255,255,255,.12); color:#fff;
+  }
+
+  /* MAIN GRID */
+  .main-grid { display:grid; grid-template-columns:220px 1fr; gap:28px; margin-bottom:28px; align-items:start; }
+  @media(max-width:680px){ .main-grid{grid-template-columns:1fr} }
+
+  /* PHONE */
+  .phone-col { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .phone-frame {
+    background:#0f0f1a; border-radius:30px; padding:9px;
+    box-shadow:0 12px 40px rgba(0,0,0,.22);
+    width:175px;
+  }
+  .phone-screen {
+    border-radius:22px; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .phone-bar {
+    width:100%; padding:9px 10px; text-align:center;
+    font-size:11px; font-weight:700; color:#fff; flex-shrink:0;
+  }
+  .phone-body {
+    width:100%; display:flex; flex-direction:column;
+    align-items:center; padding:14px 10px; gap:8px;
+  }
+  .ph-av {
+    width:60px; height:60px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:24px; border:2px solid rgba(255,255,255,.25);
+  }
+  .ph-txt  { font-size:12px; font-weight:700; text-align:center; }
+  .ph-sub  { font-size:10px; text-align:center; color:#9E9E9E; }
+  .ph-inp  { width:88%; padding:7px 10px; border-radius:7px; font-size:10px; color:#9E9E9E; }
+  .ph-btn  { width:88%; padding:8px; border-radius:9px; font-size:11px; font-weight:700; text-align:center; color:#fff; }
+  .ph-rnd  { width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; }
+  .ph-hg   { display:flex; gap:8px; justify-content:center; width:100%; }
+  .ph-em   { font-size:42px; }
+  .phone-caption { font-size:11px; color:var(--muted); font-weight:500; }
+
+  /* RIGHT SIDE */
+  .challenge-box {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:22px 24px;
+    display:flex; flex-direction:column; gap:20px; }
+  .challenge-title {
+    font-family:'Syne',sans-serif; font-size:18px; font-weight:800;
+    margin-bottom:6px;
+  }
+  .challenge-desc {
+    font-size:13px; color:var(--muted); line-height:1.7; margin-bottom:20px;
+  }
+
+  /* HINTS */
+  .hints-title {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--muted); margin-bottom:10px;
+  }
+  .hint-list { display:flex; flex-direction:column; gap:0; margin-bottom:20px; }
+  .hint {
+    display:flex; align-items:flex-start; gap:10px;
+    padding:9px 0; border-bottom:1px solid var(--border); cursor:pointer;
+  }
+  .hint:last-child { border-bottom:none; }
+  .hint-icon {
+    width:20px; height:20px; border-radius:5px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:11px; margin-top:1px;
+  }
+  .hint-text { font-size:13px; color:var(--text); line-height:1.5; flex:1; }
+  .hint-text code {
+    font-family:monospace; font-size:11px; background:#F3F4F6;
+    padding:1px 5px; border-radius:4px;
+  }
+  .hint-reveal {
+    font-size:11px; font-weight:600; color:var(--muted);
+    background:var(--bg); border:none; padding:3px 9px;
+    border-radius:99px; cursor:pointer; flex-shrink:0; margin-top:2px;
+    transition:background .15s;
+  }
+  .hint-reveal:hover { background:var(--border); }
+  .hint-answer {
+    display:none; font-size:12px; color:var(--muted); margin-top:4px;
+    background:#F9FAFB; border-radius:6px; padding:6px 10px; line-height:1.6;
+  }
+  .hint-answer code { font-family:monospace; font-size:11px; background:#F3F4F6; padding:1px 5px; border-radius:4px; }
+  .hint-answer.show { display:block; }
+
+  /* NAMES BOX */
+  .names-box {
+    border-radius:12px; padding:16px 18px; margin-bottom:20px;
+  }
+  .names-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px; }
+  .name-item {
+    display:flex; align-items:center; gap:10px;
+    padding:7px 0; border-bottom:1px solid rgba(0,0,0,.06);
+    cursor:pointer;
+  }
+  .name-item:last-child { border-bottom:none; }
+  .name-cb {
+    width:16px; height:16px; border-radius:4px; border:2px solid rgba(0,0,0,.15);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    transition:background .15s, border-color .15s;
+  }
+  .name-cb.on { background:#16A34A; border-color:#16A34A; }
+  .name-tag {
+    font-family:monospace; font-size:11px; font-weight:700;
+    padding:2px 8px; border-radius:4px; flex-shrink:0;
+  }
+  .name-why { font-size:12px; color:var(--muted); line-height:1.5; flex:1; }
+  .name-why.on { color:var(--muted); text-decoration:line-through; opacity:.5; }
+
+  /* AULA 2 */
+  .aula2 {
+    border-radius:12px; padding:16px 18px;
+    border-left:4px solid;
+  }
+  .aula2-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:8px; }
+  .aula2-code  { font-family:monospace; font-size:12px; line-height:2; }
+  .aula2-code span { display:block; }
+  .aula2-extra { font-size:12px; margin-top:10px; opacity:.75; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-pill">App Inventor</span>
+  <div class="header-title">Desafios — 2º Bimestre</div>
+  <span class="header-hint">Tente reproduzir a tela. Use as dicas só se precisar.</span>
+</div>
+
+<div class="tabs">
+  <button class="tab tl on" onclick="show('l',this)">🔐 Login</button>
+  <button class="tab tm"    onclick="show('m',this)">🎮 Mario</button>
+  <button class="tab ts"    onclick="show('s',this)">🎵 Player</button>
+  <button class="tab tc"    onclick="show('c',this)">🌤 Clima</button>
+</div>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════ -->
+<div class="page on" id="pg-l">
+  <div class="banner" style="background:var(--login)">
+    <div class="banner-emoji">🔐</div>
+    <div>
+      <h1>Desafio 1 — Login</h1>
+      <p>Reproduza a tela abaixo no App Inventor. Você decide os tamanhos, espaçamentos e cores — desde que fique parecido.</p>
+      <div class="banner-tags">
+        <span class="banner-tag">Projeto: Login</span>
+        <span class="banner-tag">Aula 1 — Designer</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="phone-col">
+      <div class="phone-frame">
+        <div class="phone-screen" style="background:#fff">
+          <div class="phone-bar" style="background:var(--login)">Meu App</div>
+          <div class="phone-body">
+            <div class="ph-av" style="background:var(--login)">👤</div>
+            <div class="ph-txt" style="color:var(--login)">Bem-vindo!</div>
+            <div class="ph-inp" style="background:#EEEEEE">Digite seu usuário</div>
+            <div class="ph-inp" style="background:#EEEEEE">Digite sua senha</div>
+            <div class="ph-btn" style="background:var(--login);margin-top:4px">Entrar</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-caption">Resultado esperado</div>
+    </div>
+
+    <div class="challenge-box">
+      <div>
+        <div class="challenge-title" style="color:var(--login)">Sua missão</div>
+        <div class="challenge-desc">Monte esta tela de login no App Inventor. Tudo centralizado, foto de perfil, dois campos de texto e um botão roxo. <strong>Tente sem dicas primeiro.</strong></div>
+
+        <div class="hints-title">Dicas — clique em "revelar" se travar</div>
+        <div class="hint-list">
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--login-l);color:var(--login)">1</div>
+            <div style="flex:1">
+              <div class="hint-text">Como centralizar tudo na tela</div>
+              <div class="hint-answer" id="hl-1">Screen1 → Properties → <code>AlignHorizontal: Center</code> · Não esqueça de marcar <code>Scrollable</code> também.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hl-1',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--login-l);color:var(--login)">2</div>
+            <div style="flex:1">
+              <div class="hint-text">Qual componente usa para o campo de senha</div>
+              <div class="hint-answer" id="hl-2">Não é o TextBox comum — é o <code>PasswordTextBox</code>. Ele fica em User Interface e esconde o que você digita automaticamente.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hl-2',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--login-l);color:var(--login)">3</div>
+            <div style="flex:1">
+              <div class="hint-text">Como colocar uma foto de perfil</div>
+              <div class="hint-answer" id="hl-3">Componente <code>Image</code> → campo <code>Picture</code> → cole esta URL: <code>https://i.pravatar.cc/150</code></div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hl-3',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--login-l);color:var(--login)">4</div>
+            <div style="flex:1">
+              <div class="hint-text">Cor roxa exata do botão e do título</div>
+              <div class="hint-answer" id="hl-4">Cor do botão e barra: <code>#4A148C</code> · Cor do texto "Bem-vindo!": <code>#4A148C</code> · No Properties, clique na cor → Custom → cole o código.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hl-4',this)">revelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="names-box" style="background:var(--login-l)">
+          <div class="names-title" style="color:var(--login)">📌 Nomes que você DEVE guardar para a Aula 2</div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--login);color:#fff">Label_BemVindo</span>
+            <div class="name-why">O label "Bem-vindo!" — vai mudar de texto ao clicar</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--login);color:#fff">Btn_Entrar</span>
+            <div class="name-why">O botão Entrar — vai receber o evento de clique</div>
+          </div>
+        </div>
+
+        <div class="aula2" style="background:var(--login-l);border-color:var(--login)">
+          <div class="aula2-label" style="color:var(--login)">⚡ Aula 2 — o que vai acontecer</div>
+          <div class="aula2-code" style="color:var(--login)">
+            <span>when <strong>Btn_Entrar</strong>.Click</span>
+            <span>→ set <strong>Label_BemVindo</strong>.Text to "Login feito!"</span>
+          </div>
+          <div class="aula2-extra" style="color:var(--login)">Desafio extra: mudar a cor da tela para verde ao clicar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MARIO ══════════════════════════════════════════════ -->
+<div class="page" id="pg-m">
+  <div class="banner" style="background:var(--mario)">
+    <div class="banner-emoji">🎮</div>
+    <div>
+      <h1>Desafio 2 — Mario</h1>
+      <p>Reproduza a tela do jogo. Pode usar qualquer personagem — Sonic, Pikachu, o que quiser. O que importa é a estrutura.</p>
+      <div class="banner-tags">
+        <span class="banner-tag">Projeto: Mario</span>
+        <span class="banner-tag">Aula 1 — Designer</span>
+        <span class="banner-tag">Aula 2 — Lógica com a professora</span>
+        <span class="banner-tag">Aula 3 — Múltiplas telas ✨</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="phone-col">
+      <div class="phone-frame">
+        <div class="phone-screen" style="background:#5C94FC">
+          <div class="phone-bar" style="background:var(--mario)">World 1-1</div>
+          <div class="phone-body">
+            <div class="ph-em">🍄</div>
+            <div class="ph-txt" style="color:#D32F2F">Super Mario</div>
+            <div class="ph-sub" style="color:#fff">Vidas: ❤️❤️❤️</div>
+            <div class="ph-sub" style="color:#FFEB3B">Pontos: 0</div>
+            <div class="ph-btn" style="background:var(--mario);margin-top:6px">▶ JOGAR</div>
+            <div class="ph-btn" style="background:#9E9E9E;margin-top:4px">Reset</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-caption">Resultado esperado</div>
+    </div>
+
+    <div class="challenge-box">
+      <div>
+        <div class="challenge-title" style="color:var(--mario)">Sua missão</div>
+        <div class="challenge-desc">Monte a tela inicial do jogo. Personagem, vidas, pontos e botão JOGAR. Fundo azul céu. <strong>Use o personagem que quiser.</strong><br><br>Na <strong>aula de hoje</strong> você vai programar a lógica junto com a professora: variável de pontos que sobe a cada clique, vidas que diminuem quando os pontos chegam a 100, e botão Reset que zera tudo.</div>
+
+        <div class="hints-title">Dicas — clique em "revelar" se travar</div>
+        <div class="hint-list">
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--mario-l);color:var(--mario)">1</div>
+            <div style="flex:1">
+              <div class="hint-text">Como colocar o fundo azul na tela</div>
+              <div class="hint-answer" id="hm-1">Screen1 → Properties → <code>BackgroundColor</code> → Custom → <code>#5C94FC</code></div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hm-1',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--mario-l);color:var(--mario)">2</div>
+            <div style="flex:1">
+              <div class="hint-text">Não achei imagem do Mario — o que faço?</div>
+              <div class="hint-answer" id="hm-2">Use um emoji grande! Label com Text: 🍄 e FontSize: 48 funciona perfeitamente. Ou Google → "mario png" → botão direito → copiar endereço da imagem → colar no campo Picture do componente Image.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hm-2',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--mario-l);color:var(--mario)">3</div>
+            <div style="flex:1">
+              <div class="hint-text">Cor laranja exata do botão JOGAR</div>
+              <div class="hint-answer" id="hm-3"><code>#E65100</code> — Properties → BackgroundColor → Custom</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hm-3',this)">revelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="names-box" style="background:var(--mario-l)">
+          <div class="names-title" style="color:var(--mario)">📌 Para a lógica de hoje — seus componentes precisam ter exatamente esses nomes</div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--mario);color:#fff">Label_Icone</span>
+            <div class="name-why">O emoji do personagem — ex: 🍄</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--mario);color:#fff">Label_Titulo</span>
+            <div class="name-why">O nome do personagem — ex: "Super Mario"</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--mario);color:#fff">LabelVidas</span>
+            <div class="name-why">O label de vidas — vai perder corações quando pontos chegarem a 100</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--mario);color:#fff">LabelPontos</span>
+            <div class="name-why">O label de pontos — vai aumentar 10 a cada clique</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--mario);color:#fff">Btn_Jogar</span>
+            <div class="name-why">O botão JOGAR — dispara o evento de clique</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--mario);color:#fff">Btn_Reset</span>
+            <div class="name-why">O botão Reset — zera pontos e restaura as vidas</div>
+          </div>
+        </div>
+
+        <div class="aula2" style="background:#E6F4ED;border:1px solid #2D7A4F;border-radius:10px;padding:1rem 1.25rem;margin-top:1rem">
+          <div class="aula2-label" style="color:#2D7A4F">✨ Aula 3 — Múltiplas telas</div>
+          <div style="font-size:13px;color:#1A5C36;line-height:1.7;margin-bottom:10px">
+            Adicione uma <strong>Tela2</strong> de Game Over ao Mario. Quando os pontos chegarem a 100 → app navega automaticamente para a Tela2. Um botão traz o jogador de volta.
+          </div>
+          <div class="aula2-code" style="color:#1A5C36">
+            <span style="font-weight:600;margin-bottom:4px;display:block">🖼 Designer — montar a Tela2</span>
+            <span>1. Clicar no <strong>+</strong> ao lado de Screen1 → nome: <strong>Tela2</strong></span>
+            <span>2. Arrastar <strong>VerticalArrangement</strong> (Layout) → Width: Fill parent · Height: Fill parent · AlignHorizontal: Center · AlignVertical: Center</span>
+            <span>3. Dentro do VerticalArrangement arrastar:</span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"Game Over 💀"</strong> · FontSize: 28 · FontBold: marcar · TextAlignment: Center · Width: Fill parent</span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"Tente de novo!"</strong> · FontSize: 16 · TextAlignment: Center · Width: Fill parent</span>
+            <span>&nbsp;&nbsp;→ Button → Text: <strong>"← Voltar"</strong> · Width: Fill parent → renomear para <strong>Btn_Voltar</strong></span>
+            <span style="font-weight:600;margin-top:8px;margin-bottom:4px;display:block">⚡ Blocks — navegação</span>
+            <span>4. Ir para <strong>Screen1</strong> → Blocks → dentro do <strong>then</strong> do if pontos ≥ 100 adicionar:</span>
+            <span>&nbsp;&nbsp;→ Control → <strong>open another screen screenName "Tela2"</strong></span>
+            <span>5. Ir para <strong>Tela2</strong> → Blocks → when Btn_Voltar.Click:</span>
+            <span>&nbsp;&nbsp;→ Control → <strong>close screen</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PLAYER ══════════════════════════════════════════════ -->
+<div class="page" id="pg-s">
+  <div class="banner" style="background:var(--music)">
+    <div class="banner-emoji">🎵</div>
+    <div>
+      <h1>Desafio 3 — Player de Música</h1>
+      <p>Monte o player com capa do álbum e 3 botões lado a lado. Novo componente: HorizontalArrangement.</p>
+      <div class="banner-tags">
+        <span class="banner-tag">Projeto: Player</span>
+        <span class="banner-tag">Aula 1 — Designer</span>
+        <span class="banner-tag">Aula 2 — Lógica com a professora</span>
+        <span class="banner-tag">Novo: HorizontalArrangement</span>
+        <span class="banner-tag">Aula 3 — Múltiplas telas ✨</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="phone-col">
+      <div class="phone-frame">
+        <div class="phone-screen" style="background:#212121">
+          <div class="phone-bar" style="background:#1a1a1a">Meu Player</div>
+          <div class="phone-body">
+            <div style="width:75px;height:75px;border-radius:10px;background:#424242;display:flex;align-items:center;justify-content:center;font-size:30px">🎵</div>
+            <div class="ph-txt" style="color:#fff;font-size:11px">Demons - Imagine Dragons</div>
+            <div class="ph-sub">2:34 / 4:00</div>
+            <div class="ph-hg" style="margin-top:6px">
+              <div class="ph-rnd" style="background:#424242">⏮</div>
+              <div class="ph-rnd" style="background:#1DB954;width:44px;height:44px;font-size:16px">▶</div>
+              <div class="ph-rnd" style="background:#424242">⏭</div>
+            </div>
+            <div class="ph-btn" style="background:#9E9E9E;margin-top:6px">Reset</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-caption">Resultado esperado</div>
+    </div>
+
+    <div class="challenge-box">
+      <div>
+        <div class="challenge-title" style="color:var(--music)">Sua missão</div>
+        <div class="challenge-desc">Monte o player. O desafio aqui é colocar os 3 botões <strong>lado a lado</strong> — para isso existe o HorizontalArrangement em Palette → Layout.<br><br>Na <strong>aula de hoje</strong> você vai programar a lógica sozinho: o botão Play alterna entre ▶ e ⏸, o botão Próximo troca a música e conta quantas você ouviu — quando chegar em 5, aparece uma mensagem especial.</div>
+
+        <div class="hints-title">Dicas — clique em "revelar" se travar</div>
+        <div class="hint-list">
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--music-l);color:var(--music)">1</div>
+            <div style="flex:1">
+              <div class="hint-text">Como colocar os 3 botões lado a lado</div>
+              <div class="hint-answer" id="hs-1">Palette → <strong>Layout</strong> → arraste <code>HorizontalArrangement</code> para a tela → Width: Fill parent → AlignHorizontal: Center → arraste os 3 botões para DENTRO dele.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hs-1',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--music-l);color:var(--music)">2</div>
+            <div style="flex:1">
+              <div class="hint-text">Como fazer o botão ficar redondo</div>
+              <div class="hint-answer" id="hs-2">Button → Properties → <code>Shape: oval</code> · Para ficar quadrado igual a um círculo, defina <code>Width</code> e <code>Height</code> com o mesmo valor (ex: 55px).</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hs-2',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--music-l);color:var(--music)">3</div>
+            <div style="flex:1">
+              <div class="hint-text">Cor verde do botão Play</div>
+              <div class="hint-answer" id="hs-3"><code>#1DB954</code> — é a cor do Spotify</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hs-3',this)">revelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="names-box" style="background:var(--music-l)">
+          <div class="names-title" style="color:var(--music)">📌 Nomes que você DEVE guardar para a Aula 2</div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Button_Icone</span>
+            <div class="name-why">O quadrado com a capa do álbum — decorativo</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Label_Musica</span>
+            <div class="name-why">O nome da música — vai mudar ao clicar em Próximo</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Label_Tempo</span>
+            <div class="name-why">O tempo da música — ex: "2:34 / 4:00"</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Btn_anterior</span>
+            <div class="name-why">O botão ⏮ — volta para a música anterior</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Btn_Play</span>
+            <div class="name-why">O botão ▶ — alterna entre ▶ e ⏸ a cada clique</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Btn_Proximo</span>
+            <div class="name-why">O botão ⏭ — troca a música e soma 1 ao contador</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--music);color:#fff">Btn_Reset</span>
+            <div class="name-why">Reinicia — zera o contador e volta à primeira música</div>
+          </div>
+        </div>
+
+
+
+        <div class="aula2" style="background:#E6F4ED;border:1px solid #2D7A4F;border-radius:10px;padding:1rem 1.25rem;margin-top:1rem">
+          <div class="aula2-label" style="color:#2D7A4F">✨ Aula 3 — Múltiplas telas</div>
+          <div style="font-size:13px;color:#1A5C36;line-height:1.7;margin-bottom:10px">
+            Adicione uma <strong>Tela2</strong> de Playlist. O botão ⏭ Próximo abre a lista de músicas. Botão na Tela2 volta para o player.
+          </div>
+          <div class="aula2-code" style="color:#1A5C36">
+            <span style="font-weight:600;margin-bottom:4px;display:block">🖼 Designer — montar a Tela2</span>
+            <span>1. Clicar no <strong>+</strong> ao lado de Screen1 → nome: <strong>Tela2</strong></span>
+            <span>2. Arrastar <strong>VerticalArrangement</strong> (Layout) → Width: Fill parent · Height: Fill parent · AlignHorizontal: Center</span>
+            <span>3. Dentro do VerticalArrangement arrastar:</span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"🎵 Playlist"</strong> · FontSize: 20 · FontBold: marcar · TextAlignment: Center · Width: Fill parent</span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"1. [nome da sua música]"</strong> · Width: Fill parent — renomear: <strong>Label_M1</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"2. [nome da sua música]"</strong> · Width: Fill parent — renomear: <strong>Label_M2</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"3. [nome da sua música]"</strong> · Width: Fill parent — renomear: <strong>Label_M3</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"4. [nome da sua música]"</strong> · Width: Fill parent — renomear: <strong>Label_M4</strong></span>
+            <span>&nbsp;&nbsp;→ Button → Text: <strong>"← Voltar"</strong> · Width: Fill parent → renomear: <strong>Btn_Voltar</strong></span>
+            <span style="font-weight:600;margin-top:8px;margin-bottom:4px;display:block">⚡ Blocks — navegação</span>
+            <span>4. Ir para <strong>Screen1</strong> → Blocks → when Btn_Proximo.Click → adicionar:</span>
+            <span>&nbsp;&nbsp;→ Control → <strong>open another screen screenName "Tela2"</strong></span>
+            <span>5. Ir para <strong>Tela2</strong> → Blocks → when Btn_Voltar.Click:</span>
+            <span>&nbsp;&nbsp;→ Control → <strong>close screen</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CLIMA ══════════════════════════════════════════════ -->
+<div class="page" id="pg-c">
+  <div class="banner" style="background:var(--clima)">
+    <div class="banner-emoji">🌤</div>
+    <div>
+      <h1>Desafio 4 — App de Clima</h1>
+      <p>Monte o app de clima. Na <strong>aula de hoje</strong> você vai programar a lógica junto com a professora. Na Semana 3 este app vai se conectar a uma API real e mostrar a temperatura de verdade de São Paulo!</p>
+      <div class="banner-tags">
+        <span class="banner-tag">Projeto: Clima</span>
+        <span class="banner-tag">Aula 1 — Designer</span>
+        <span class="banner-tag">⭐ API real na Semana 3</span>
+        <span class="banner-tag">Aula 3 — Múltiplas telas ✨</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="phone-col">
+      <div class="phone-frame">
+        <div class="phone-screen" style="background:#fff">
+          <div class="phone-bar" style="background:var(--clima)">Tempo Agora</div>
+          <div class="phone-body">
+            <div class="ph-em">🌤</div>
+            <div class="ph-txt" style="color:var(--clima);font-size:22px">28°C</div>
+            <div class="ph-sub" style="color:#616161">São Paulo, SP</div>
+            <div class="ph-sub">Parcialmente nublado</div>
+            <div class="ph-btn" style="background:var(--clima);margin-top:8px;width:70%">Atualizar</div>
+            <div class="ph-btn" style="background:#1A5C36;margin-top:4px;width:70%">Ver Detalhes</div>
+            <div class="ph-btn" style="background:#9E9E9E;margin-top:4px;width:70%">Reset</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-caption">Resultado esperado</div>
+    </div>
+
+    <div class="challenge-box">
+      <div>
+        <div class="challenge-title" style="color:var(--clima)">Sua missão</div>
+        <div class="challenge-desc">Monte o app de clima. Parece simples — mas preste atenção nos <strong>nomes</strong> dos Labels. Eles são essenciais para a Semana 3 quando a API entrar.<br><br>Na <strong>aula de hoje</strong> você vai programar a lógica junto com a professora:<br><br>
+        1. Criar uma variável global <strong>temp</strong> começando em 20<br>
+        2. Botão <strong>Atualizar</strong>: soma 3 na temperatura e mostra no label usando <code>join temp "°C"</code><br>
+        3. Condição <strong>if/else if/else</strong> com 3 situações:<br>
+        &nbsp;&nbsp;&nbsp;• temp ≥ 35 → 🔥 + "Beba água e evite o sol."<br>
+        &nbsp;&nbsp;&nbsp;• temp ≥ 28 → ☀️ + "Dia ensolarado"<br>
+        &nbsp;&nbsp;&nbsp;• senão → 🌤 + "Parcialmente nublado"<br>
+        4. Botão <strong>Reset</strong>: volta temp para 20, label para "20°C", ícone para 🌤 e descrição para "Parcialmente nublado"</div>
+
+        <div class="hints-title">Dicas — clique em "revelar" se travar</div>
+        <div class="hint-list">
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--clima-l);color:var(--clima)">1</div>
+            <div style="flex:1">
+              <div class="hint-text">Como fazer o emoji de clima ficar grande</div>
+              <div class="hint-answer" id="hc-1">Use um Label — não Image. <code>Text: 🌤</code> · <code>FontSize: 48</code> · <code>Height: 70px fixo</code>. Nomear: <code>Label_Emoji</code>. A altura fixa evita que o emoji mude de lugar quando o texto muda.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hc-1',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--clima-l);color:var(--clima)">2</div>
+            <div style="flex:1">
+              <div class="hint-text">Como deixar a temperatura grande e azul</div>
+              <div class="hint-answer" id="hc-2">Label → <code>FontSize: 36</code> · <code>FontBold: marcar</code> · <code>TextColor: #1565C0</code> · <code>Height: 50px fixo</code>. Nomear: <code>Label_Temp</code>.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hc-2',this)">revelar</button>
+          </div>
+          <div class="hint">
+            <div class="hint-icon" style="background:var(--clima-l);color:var(--clima)">3</div>
+            <div style="flex:1">
+              <div class="hint-text">Por que os nomes importam tanto neste app?</div>
+              <div class="hint-answer" id="hc-3">Na Semana 3 você vai adicionar o componente Web que busca a temperatura real. O bloco vai dizer: "set Label_Temp.Text to [temperatura da API]". Se o nome estiver errado, o bloco não encontra o componente.</div>
+            </div>
+            <button class="hint-reveal" onclick="toggleHint('hc-3',this)">revelar</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="names-box" style="background:var(--clima-l)">
+          <div class="names-title" style="color:var(--clima)">📌 Para a lógica de hoje — seus componentes precisam ter exatamente esses nomes</div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Label_Icone</span>
+            <div class="name-why">Só o emoji do tempo (ex: 🌤) — FontSize 48, Height fixo 70px</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Label_Temp</span>
+            <div class="name-why">A temperatura — vai receber o dado real da API na Semana 3</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Label_Cidade</span>
+            <div class="name-why">O nome da cidade — ex: "São Paulo"</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Label_Desc</span>
+            <div class="name-why">A descrição do clima — "Parcialmente nublado", "Dia ensolarado" etc</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Btn_Atualizar</span>
+            <div class="name-why">Simula atualização do clima — sobe a temperatura e muda o ícone</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Btn_Detalhes</span>
+            <div class="name-why">Novo botão — abre a Tela2 com os detalhes do clima</div>
+          </div>
+          <div class="name-item" onclick="toggleName(this)">
+            <div class="name-cb"></div>
+            <span class="name-tag" style="background:var(--clima);color:#fff">Btn_Reset</span>
+            <div class="name-why">Volta tudo para o estado inicial — temperatura 20°C e ícone 🌤</div>
+          </div>
+        </div>
+
+        <div class="aula2" style="background:#E6F4ED;border:1px solid #2D7A4F;border-radius:10px;padding:1rem 1.25rem;margin-top:1rem">
+          <div class="aula2-label" style="color:#2D7A4F">✨ Aula 3 — Múltiplas telas</div>
+          <div style="font-size:13px;color:#1A5C36;line-height:1.7;margin-bottom:10px">
+            Adicione um botão <strong>Ver Detalhes</strong> na Tela1 e uma <strong>Tela2</strong> com informações extras do clima. Um botão na Tela2 volta para o app.
+          </div>
+          <div class="aula2-code" style="color:#1A5C36">
+            <span style="font-weight:600;margin-bottom:4px;display:block">🖼 Designer — adicionar Btn_Detalhes na Tela1</span>
+            <span>1. Na Screen1 → arrastar Button abaixo do Btn_Atualizar</span>
+            <span>&nbsp;&nbsp;→ Text: <strong>"Ver Detalhes"</strong> · Width: 70% · Background: verde</span>
+            <span>&nbsp;&nbsp;→ Renomear para <strong>Btn_Detalhes</strong></span>
+            <span style="font-weight:600;margin-top:8px;margin-bottom:4px;display:block">🖼 Designer — montar a Tela2</span>
+            <span>2. Clicar no <strong>+</strong> ao lado de Screen1 → nome: <strong>Tela2</strong></span>
+            <span>3. Arrastar <strong>VerticalArrangement</strong> → Width: Fill parent · Height: Fill parent · AlignHorizontal: Center</span>
+            <span>4. Dentro do VerticalArrangement arrastar:</span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"🌡 Detalhes do Clima"</strong> · FontSize: 20 · FontBold: marcar · Width: Fill parent · TextAlignment: Center → renomear: <strong>Label_Titulo</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"💧 Umidade: 65%"</strong> · Width: Fill parent → renomear: <strong>Label_Umidade</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"💨 Vento: 12 km/h"</strong> · Width: Fill parent → renomear: <strong>Label_Vento</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"🌡 Sensação térmica: 26°C"</strong> · Width: Fill parent → renomear: <strong>Label_Sensacao</strong></span>
+            <span>&nbsp;&nbsp;→ Label → Text: <strong>"📍 São Paulo, SP"</strong> · Width: Fill parent → renomear: <strong>Label_Cidade2</strong></span>
+            <span>&nbsp;&nbsp;→ Button → Text: <strong>"← Voltar"</strong> · Width: Fill parent → renomear: <strong>Btn_Voltar</strong></span>
+            <span style="font-weight:600;margin-top:8px;margin-bottom:4px;display:block">⚡ Blocks — navegação</span>
+            <span>5. Ir para <strong>Screen1</strong> → Blocks → when Btn_Detalhes.Click:</span>
+            <span>&nbsp;&nbsp;→ Control → <strong>open another screen screenName "Tela2"</strong></span>
+            <span>6. Ir para <strong>Tela2</strong> → Blocks → when Btn_Voltar.Click:</span>
+            <span>&nbsp;&nbsp;→ Control → <strong>close screen</strong></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  btn.classList.add('on');
+}
+function toggleHint(id, btn) {
+  const el = document.getElementById(id);
+  const showing = el.classList.toggle('show');
+  btn.textContent = showing ? 'ocultar' : 'revelar';
+}
+function toggleName(item) {
+  const cb  = item.querySelector('.name-cb');
+  const txt = item.querySelector('.name-why');
+  cb.classList.toggle('on');
+  txt.classList.toggle('on');
+  if (cb.classList.contains('on')) {
+    cb.innerHTML = '<svg width="9" height="9" viewBox="0 0 9 9"><path d="M1 4.5l2.5 2.5L8 2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else {
+    cb.innerHTML = '';
+  }
+}
+</script>
+</body>
+</html>
